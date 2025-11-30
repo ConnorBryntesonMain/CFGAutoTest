@@ -98,6 +98,9 @@ class CFGGenerator:
         reasoning = f"String type. Max Length: {max_len}. Charset: {charset}. Samples generated randomly."
         return CFG(start_symbol="S", productions=productions, reasoning=reasoning)
 
+    def _create_bool_cfg(self, param: str) -> CFG:
+        return CFG(start_symbol="S", productions={"S": ["True", "False"]}, reasoning="Boolean type. Values: True, False.")
+
     def create_invalid_cfg(self, bounds: Dict[str, Any]) -> Dict[str, CFG]:
         """
         Creates a CFG for generating invalid inputs (out of bounds, etc.) for each parameter.

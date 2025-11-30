@@ -79,9 +79,69 @@ def write_cfg_report(target_path: str, cfgs: Dict[str, Dict[str, Any]], test_out
                 f.write("\n")
         
         if test_output:
+            summary = _summarize_test_results(test_output)
             f.write("## Detected Bugs / Test Results\n\n")
-            f.write("```\n")
+            f.write(summary)
+            f.write("\n\n<details>\n<summary>Raw Test Output</summary>\n\n```\n")
             f.write(test_output)
-            f.write("\n```\n")
+            f.write("\n```\n</details>\n")
                 
     print(f"Generated CFG report: {report_file_path}")
+
+def _summarize_test_results(output: str) -> str:
+    """
+    Parses pytest output and returns a markdown summary.
+    """
+    import re
+    
+    # Extract summary line
+    summary_line_match = re.search(r'=+ (.*?) =+', output.splitlines()[-1])
+    summary_line = summary_line_match.group(1) if summary_line_match else "Unknown Status"
+    
+    # Extract failures
+    failures = []
+    
+    # Split output into blocks based on the separator line
+    # Pytest failure blocks start with ____________ test_name ____________
+    blocks = re.split(r'_{10,} (.*?) _{10,}', output)
+    
+    # The first block is usually setup/collection, subsequent blocks are failures
+    # blocks[0] is pre-failure, blocks[1] is test name, blocks[2] is content, blocks[3] is test name...
+    
+    if len(blocks) > 1:
+        for i in range(1, len(blocks), 2):
+            test_name_full = blocks[i]
+            content = blocks[i+1]
+            
+            # Parse test name (remove [kwargs...])
+            test_name = test_name_full.split("[")[0]
+            if "[" in test_name_full:
+                 param = "[" + test_name_full.split("[", 1)[1]
+                 test_name += param
+            
+            # Find error message (E   Error: ...)
+            error_match = re.search(r'^E\s+(.*)$', content, re.MULTILINE)
+            error_msg = error_match.group(1) if error_match else "Unknown Error"
+            
+            # Find line number (filename:line: ...)
+            # Look for the line where the failure happened in the test file
+            # usually: examples/target_functions_test.py:51: Failed
+            line_match = re.search(r'target_functions_test\.py:(\d+):', content)
+            line_num = line_match.group(1) if line_match else "?"
+            
+            failures.append((test_name, line_num, error_msg))
+
+    if not failures:
+        # Fallback to simple parsing if blocks didn't work (e.g. short output)
+        if "FAILED" in output:
+             return f"**Status**: {summary_line}\n\nTests failed but detailed parsing failed. See raw output."
+        return f"**Status**: {summary_line}\n\nAll tests passed!"
+        
+    table = f"**Status**: {summary_line}\n\n"
+    table += "| Test Case | Line | Failure Reason |\n"
+    table += "| :--- | :--- | :--- |\n"
+    
+    for name, line, reason in failures:
+        table += f"| `{name}` | {line} | {reason} |\n"
+        
+    return table

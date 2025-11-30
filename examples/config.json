@@ -12,5 +12,44 @@
             "max_length": 5,
             "charset": "alphanumeric"
         }
+    },
+    "solve_quadratic": {
+        "a": {
+            "type": "float",
+            "min": -10.0,
+            "max": 10.0
+        },
+        "b": {
+            "type": "float",
+            "min": -10.0,
+            "max": 10.0
+        },
+        "c": {
+            "type": "float",
+            "min": -10.0,
+            "max": 10.0
+        }
+    },
+    "process_order": {
+        "quantity": {
+            "type": "int",
+            "min": 1,
+            "max": 100
+        },
+        "price": {
+            "type": "float",
+            "min": 0.1,
+            "max": 1000.0
+        },
+        "member": {
+            "type": "bool"
+        }
+    },
+    "validate_username": {
+        "username": {
+            "type": "str",
+            "max_length": 15,
+            "charset": "alphanumeric"
+        }
     }
 }

@@ -61,7 +61,27 @@ python3 main.py examples/target_functions.py --config examples/config.json
 
 ### Output
 *   `[target]_test.py`: The generated pytest file.
-*   `[target]_cfg_report.md`: Report containing the grammar and test results.
+*   `[target]_cfg_report.md`: Report containing:
+    *   The generated grammar (productions).
+    *   **Test Results Summary**: A concise table showing passed/failed tests.
+    *   **Detailed Failures**: Line numbers and specific error messages for each bug found.
+
+## Features
+
+### 1. Negative Testing
+The tool automatically generates "invalid" inputs (e.g., integers out of range, strings too long) to verify that your function correctly raises exceptions. If your function accepts these invalid inputs, the test will fail, alerting you to a missing validation check.
+
+### 2. Bug Detection & Reporting
+The generated report doesn't just show the grammar; it runs the tests and reports the results. It highlights:
+*   **Logic Bugs**: When valid inputs cause crashes.
+*   **Validation Gaps**: When invalid inputs are accepted.
+*   **Constraint Mismatches**: When the config allows values that the code rejects (or vice versa).
+
+### 3. Complex Function Support
+Handles functions with:
+*   Multiple parameters (`int`, `float`, `str`, `bool`).
+*   Cross-parameter constraints (e.g., quadratic equations).
+*   Business logic (e.g., order processing).
 
 ## Configuration Format
 ```json
