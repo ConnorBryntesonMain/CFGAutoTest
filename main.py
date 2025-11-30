@@ -58,6 +58,8 @@ def main():
 
     # Generate Tests
     all_test_cases = {}
+    all_cfgs = {}
+    
     for func_name, func in functions_to_test:
         print(f"Processing function: {func_name}")
         
@@ -69,14 +71,48 @@ def main():
             
         # Generate CFG
         cfgs = cfg_gen.from_bounds(bounds)
+        invalid_cfgs = cfg_gen.create_invalid_cfg(bounds)
+        
+        all_cfgs[func_name] = cfgs # Save for report (only valid ones for now, or maybe both?)
+        # Let's save valid ones for the report as requested, maybe add invalid later if needed.
         
         # Generate Tests
-        inputs = test_gen.generate_inputs(cfgs, count=5)
+        inputs = test_gen.generate_inputs(cfgs, count=5, invalid_cfgs=invalid_cfgs)
         all_test_cases[func_name] = inputs
 
     # Write test file
-    from src.file_writer import write_test_file
+    from src.file_writer import write_test_file, write_cfg_report
     write_test_file(args.target_file, functions_to_test, all_test_cases)
+    
+    # Run tests and capture output
+    import subprocess
+    test_output = ""
+    try:
+        # Construct path to the generated test file
+        target_filename = os.path.basename(args.target_file)
+        module_name = os.path.splitext(target_filename)[0]
+        test_filename = f"{module_name}_test.py"
+        test_file_path = os.path.join(os.path.dirname(args.target_file), test_filename)
+        
+        print(f"Running tests: {test_file_path}")
+        # Use sys.executable to ensure we use the same python interpreter
+        result = subprocess.run(
+            [sys.executable, "-m", "pytest", "-v", test_file_path],
+            capture_output=True,
+            text=True
+        )
+        test_output = result.stdout + "\n" + result.stderr
+        if result.returncode != 0:
+            print("Tests failed (as expected for negative testing). Output captured.")
+        else:
+            print("Tests passed.")
+            
+    except Exception as e:
+        test_output = f"Error running tests: {e}"
+        print(test_output)
+
+    # Write CFG report
+    write_cfg_report(args.target_file, all_cfgs, test_output)
 
 if __name__ == "__main__":
     main()
