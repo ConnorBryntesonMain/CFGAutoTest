@@ -1,0 +1,8 @@
+{
+    "check_age": {
+        "age": {"type": "int", "min": -10, "max": 130}
+    },
+    "greet": {
+        "name": {"type": "str", "max_length": 5, "charset": "alphanumeric"}
+    }
+}
