@@ -71,7 +71,7 @@ def write_cfg_report(target_path: str, cfgs: Dict[str, Dict[str, Any]], test_out
             for param_name, cfg in param_cfgs.items():
                 f.write(f"### Parameter: `{param_name}`\n")
                 f.write(f"- **Start Symbol**: `{cfg.start_symbol}`\n")
-                f.write(f"- **Reasoning**: {cfg.reasoning}\n")
+                # f.write(f"- **Reasoning**: {cfg.reasoning}\n") # Removed as CFG no longer has reasoning
                 f.write(f"- **Productions**:\n")
                 for symbol, prods in cfg.productions.items():
                     for prod in prods:
